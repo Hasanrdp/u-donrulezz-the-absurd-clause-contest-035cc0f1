@@ -56,12 +56,12 @@ def verify(path, data):
     except OSError as exc:
         print(f"cannot read back {path}: {exc}", file=sys.stderr)
         return False
+    if hashlib.sha256(actual).hexdigest() != EXPECTED_SHA256:
+        print("read-back sha256 mismatch", file=sys.stderr)
+        return False
     if actual != data:
         print(f"read-back mismatch: {len(actual)} bytes, expected {len(data)}",
               file=sys.stderr)
-        return False
-    if hashlib.sha256(actual).hexdigest() != EXPECTED_SHA256:
-        print("read-back sha256 mismatch", file=sys.stderr)
         return False
     return True
 
@@ -93,8 +93,7 @@ def main() -> int:
     with open(path, "w", encoding="utf-8", newline="") as f:
         f.write(text)
     # Read the file back and confirm the exact bytes landed on disk.
-    verified = verify(path, encoded)
-    if not verified:
+    if not verify(path, encoded):
         return 1
     return 0
 
